@@ -1,0 +1,40 @@
+# Chronicle Configuration
+# Default location: ~/.config/chronicle/chronicle.yaml
+
+# Database settings
+database:
+  path: ~/.local/share/chronicle/chronicle.db
+
+# Probe configurations
+probes:
+  # Claude Code - Anthropic's CLI tool
+  claude:ClaudeCode:
+    enabled: true
+    base_path: ~/.claude/projects
+
+  # OpenCode - Multi-provider AI CLI
+  opencode:OpenCode:
+    enabled: true
+    base_path: ~/.local/share/opencode/storage
+
+  # Zed Editor - AI-powered editor
+  zed:Zed:
+    enabled: true
+    base_path: ~/Library/Application Support/Zed/threads
+
+  # Antigravity - Google's AI IDE (FROZEN)
+  gemini:Antigravity:
+    enabled: false
+    status: frozen  # Blocked by feasibility, may restart later
+    base_path: ~/.gemini/antigravity/brain
+
+# Project linking settings
+linking:
+  auto_link: true               # Automatically link sessions to projects by path/git
+  use_git_remote: true          # Use git remote URL for cross-machine matching
+  normalize_paths: true         # Resolve symlinks and canonicalize paths
+
+# Deduplication settings
+deduplication:
+  enabled: true
+  confidence_threshold: 0.8     # Minimum confidence to flag as potential duplicate
