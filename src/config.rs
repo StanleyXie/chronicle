@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 /// Main configuration structure
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Config {
     #[serde(default)]
     pub database: DatabaseConfig,
@@ -104,17 +104,6 @@ impl Default for DeduplicationConfig {
     }
 }
 
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            database: DatabaseConfig::default(),
-            probes: HashMap::new(),
-            linking: LinkingConfig::default(),
-            deduplication: DeduplicationConfig::default(),
-        }
-    }
-}
-
 impl Config {
     /// Load configuration from a YAML file
     /// Searches in order:
@@ -151,15 +140,12 @@ impl Config {
     /// - Probe is explicitly disabled
     /// - Probe status is 'frozen' or 'deprecated'
     pub fn is_probe_enabled(&self, probe_id: &str) -> bool {
-        self.probes.get(probe_id).map_or(true, |p| {
+        self.probes.get(probe_id).is_none_or(|p| {
             if !p.enabled {
                 return false;
             }
             // Check status - frozen/deprecated probes are disabled
-            match p.status.as_deref() {
-                Some("frozen") | Some("deprecated") => false,
-                _ => true,
-            }
+            !matches!(p.status.as_deref(), Some("frozen") | Some("deprecated"))
         })
     }
 
@@ -173,9 +159,7 @@ impl Config {
 
     /// Get probe status
     pub fn probe_status(&self, probe_id: &str) -> Option<&str> {
-        self.probes
-            .get(probe_id)
-            .and_then(|p| p.status.as_deref())
+        self.probes.get(probe_id).and_then(|p| p.status.as_deref())
     }
 
     /// List all configured probes

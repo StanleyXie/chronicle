@@ -13,8 +13,8 @@ pub fn run(store: &MetadataStore, provider: Option<String>, source: Option<Strin
     }
 
     println!(
-        "{:<12} {:<10} {:<12} {:<12} {:<15} {}",
-        "Timestamp", "ID", "Project", "Provider", "Source", "Title"
+        "{:<12} {:<10} {:<12} {:<12} {:<15} Title",
+        "Timestamp", "ID", "Project", "Provider", "Source"
     );
     println!("{}", "-".repeat(100));
 

@@ -8,7 +8,7 @@
 
 mod schema;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use rusqlite::{params, Connection};
 use std::path::Path;
 
@@ -255,11 +255,7 @@ impl MetadataStore {
 
         // Try to auto-link to a project
         let project_id = self.auto_link_project(metadata)?;
-        let project_assignment = if project_id.is_some() {
-            "auto"
-        } else {
-            "auto" // Still 'auto' - means "pending auto-match"
-        };
+        let project_assignment = "auto";
 
         self.conn.execute(
             r#"INSERT INTO sessions 
