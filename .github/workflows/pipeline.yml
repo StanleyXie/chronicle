@@ -1,9 +1,11 @@
-name: Release
+name: CI/CD Pipeline
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [ "main" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "main" ]
 
 permissions:
   contents: write
@@ -14,8 +16,56 @@ env:
   BIN_NAME: chronicle
 
 jobs:
+  # --- STAGE 1: Testing & Standards ---
+  lint:
+    name: Lint & Standards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Check Formatting
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo fmt -- --check
+      - name: Run Clippy
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo clippy -- -D warnings
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Run Tests
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo test --verbose
+
+  e2e:
+    name: E2E Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo build --release
+      - name: Run Help
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: ./target/release/chronicle --help
+      - name: Run List (Empty)
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: ./target/release/chronicle list
+
+  # --- STAGE 2: Release (Only on tags, depends on Stage 1) ---
   build-release:
     name: Build Release
+    needs: [lint, test, e2e]
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -53,19 +103,18 @@ jobs:
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: ${{ matrix.asset_name }}.tar.gz
 
   update-homebrew:
     name: Update Homebrew
-    needs: build-release
+    needs: [build-release]
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Update Homebrew Formula
         uses: mislav/bump-homebrew-formula-action@v3
         with:
-          # A PR will be sent to the "homebrew-tap" repository to update this formula
           formula-name: chronicle
           formula-path: Formula/chronicle.rb
           homebrew-tap: StanleyXie/homebrew-tap
