@@ -1,6 +1,6 @@
 [package]
 name = "chronicle"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 description = "AI conversation history extraction and observability tool"
 authors = ["Stanley Xie"]
