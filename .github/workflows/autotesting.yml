@@ -1,0 +1,56 @@
+name: Autotesting
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+  WORKING_DIRECTORY: .
+
+jobs:
+  lint:
+    name: Lint & Standards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Check Formatting
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo fmt -- --check
+      - name: Run Clippy
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo clippy -- -D warnings
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Run Tests
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo test --verbose
+
+  e2e:
+    name: E2E Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build Release
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo build --release --verbose
+      - name: Run Help
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: ./target/release/chronicle --help
+      - name: Run List (Empty)
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: ./target/release/chronicle list
