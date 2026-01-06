@@ -5,6 +5,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 env:
   CARGO_TERM_COLOR: always
   WORKING_DIRECTORY: .
@@ -15,6 +18,7 @@ jobs:
     name: Build Release
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -42,16 +46,16 @@ jobs:
         shell: bash
         working-directory: ${{ env.WORKING_DIRECTORY }}
         run: |
-          mkdir -p ../dist/${{ matrix.asset_name }}
-          cp target/${{ matrix.target }}/release/${{ env.BIN_NAME }} ../dist/${{ matrix.asset_name }}/
-          cd ../dist
-          tar -czf ${{ matrix.asset_name }}.tar.gz ${{ matrix.asset_name }}
+          mkdir -p dist/${{ matrix.asset_name }}
+          cp target/${{ matrix.target }}/release/${{ env.BIN_NAME }} dist/${{ matrix.asset_name }}/
+          cd dist
+          tar -czf ../${{ matrix.asset_name }}.tar.gz ${{ matrix.asset_name }}
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: dist/${{ matrix.asset_name }}.tar.gz
+          files: ${{ matrix.asset_name }}.tar.gz
 
   update-homebrew:
     name: Update Homebrew
@@ -64,7 +68,7 @@ jobs:
           # A PR will be sent to the "homebrew-tap" repository to update this formula
           formula-name: chronicle
           formula-path: Formula/chronicle.rb
-          homebrew-tap: USER/homebrew-tap # REPLACE THIS with your actual tap repository (e.g., stanleyxie/homebrew-tap)
+          homebrew-tap: StanleyXie/homebrew-tap
           download-url: https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/chronicle-darwin-arm64.tar.gz
           commit-message: "chore: update formula to ${{ github.ref_name }}"
         env:
