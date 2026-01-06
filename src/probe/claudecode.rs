@@ -8,7 +8,7 @@ use chrono::{DateTime, Utc};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read, Seek, SeekFrom};
+use std::io::{BufRead, BufReader, Seek, SeekFrom};
 use std::path::PathBuf;
 
 use super::{
@@ -111,8 +111,7 @@ impl IngestionProbe for ClaudeCodeProbe {
     }
 
     fn extract_metadata(&self, session: &SessionRef) -> Result<SessionMetadata> {
-        let file =
-            File::open(&session.source_path).context("Failed to open session file")?;
+        let file = File::open(&session.source_path).context("Failed to open session file")?;
         let reader = BufReader::new(file);
 
         let mut messages = vec![];
@@ -227,7 +226,10 @@ impl IngestionProbe for ClaudeCodeProbe {
                         .filter_map(|item| {
                             if item.get("type").and_then(|t| t.as_str()) == Some("tool_use") {
                                 Some(ToolUseMetadata {
-                                    tool_id: item.get("id").and_then(|v| v.as_str()).map(String::from),
+                                    tool_id: item
+                                        .get("id")
+                                        .and_then(|v| v.as_str())
+                                        .map(String::from),
                                     tool_name: item
                                         .get("name")
                                         .and_then(|v| v.as_str())
@@ -259,7 +261,9 @@ impl IngestionProbe for ClaudeCodeProbe {
                 .map(|usage| TokenUsage {
                     input_tokens: usage.get("input_tokens").and_then(|v| v.as_i64()),
                     output_tokens: usage.get("output_tokens").and_then(|v| v.as_i64()),
-                    cache_read_tokens: usage.get("cache_read_input_tokens").and_then(|v| v.as_i64()),
+                    cache_read_tokens: usage
+                        .get("cache_read_input_tokens")
+                        .and_then(|v| v.as_i64()),
                     cache_creation_tokens: usage
                         .get("cache_creation_input_tokens")
                         .and_then(|v| v.as_i64()),

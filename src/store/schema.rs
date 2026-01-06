@@ -1,5 +1,5 @@
 //! SQLite schema definition - Chronicle v2
-//! 
+//!
 //! Key changes from v1:
 //! - Added projects, project_paths, project_identifiers for project-centric view
 //! - Added session_duplicates for deduplication tracking

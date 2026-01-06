@@ -1,15 +1,10 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
-mod cli;
-mod config;
-mod probe;
-mod store;
-
-use cli::{extract, list, read, project, session};
-use config::Config;
-use probe::ProbeRegistry;
-use store::MetadataStore;
+use chronicle::cli::{extract, list, project, read, session};
+use chronicle::config::Config;
+use chronicle::probe::ProbeRegistry;
+use chronicle::store::MetadataStore;
 
 #[derive(Parser)]
 #[command(name = "chronicle")]

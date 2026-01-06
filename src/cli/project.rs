@@ -1,5 +1,5 @@
-use anyhow::Result;
 use crate::store::MetadataStore;
+use anyhow::Result;
 use uuid::Uuid;
 
 pub fn create(
@@ -21,7 +21,10 @@ pub fn list(store: &MetadataStore) -> Result<()> {
         return Ok(());
     }
 
-    println!("{:<12} {:<20} {:<10} {:<8} {:<30}", "ID", "Name", "Type", "Sessions", "Path");
+    println!(
+        "{:<12} {:<20} {:<10} {:<8} {:<30}",
+        "ID", "Name", "Type", "Sessions", "Path"
+    );
     println!("{}", "-".repeat(85));
     for p in projects {
         println!(
@@ -39,7 +42,9 @@ pub fn list(store: &MetadataStore) -> Result<()> {
 pub fn add_path(store: &MetadataStore, project_id_query: String, path: String) -> Result<()> {
     // Find project by id or name
     let projects = store.list_projects()?;
-    let project = projects.iter().find(|p| p.id.starts_with(&project_id_query) || p.name == project_id_query)
+    let project = projects
+        .iter()
+        .find(|p| p.id.starts_with(&project_id_query) || p.name == project_id_query)
         .ok_or_else(|| anyhow::anyhow!("Project not found: {}", project_id_query))?;
 
     store.add_project_path(&project.id, &path, false)?;
@@ -49,10 +54,15 @@ pub fn add_path(store: &MetadataStore, project_id_query: String, path: String) -
 
 pub fn add_git(store: &MetadataStore, project_id_query: String, remote: String) -> Result<()> {
     let projects = store.list_projects()?;
-    let project = projects.iter().find(|p| p.id.starts_with(&project_id_query) || p.name == project_id_query)
+    let project = projects
+        .iter()
+        .find(|p| p.id.starts_with(&project_id_query) || p.name == project_id_query)
         .ok_or_else(|| anyhow::anyhow!("Project not found: {}", project_id_query))?;
 
     store.add_project_identifier(&project.id, "git_remote", &remote)?;
-    println!("Added git remote '{}' to project '{}'", remote, project.name);
+    println!(
+        "Added git remote '{}' to project '{}'",
+        remote, project.name
+    );
     Ok(())
 }

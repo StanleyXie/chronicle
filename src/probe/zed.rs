@@ -17,7 +17,7 @@ use std::path::PathBuf;
 
 use super::{
     ContentRef, IngestionProbe, MessageMetadata, SessionMetadata, SessionRef, SourceType,
-    TokenUsage, ToolUseMetadata,
+    ToolUseMetadata,
 };
 
 pub struct ZedProbe {
@@ -32,7 +32,7 @@ struct ZedThread {
     updated_at: Option<String>,
     model: Option<ZedModel>,
     initial_project_snapshot: Option<ProjectSnapshot>,
-    cumulative_token_usage: Option<HashMap<String, i64>>,
+    _cumulative_token_usage: Option<HashMap<String, i64>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -70,11 +70,15 @@ struct AgentContent {
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
 enum ContentItem {
-    Text { #[serde(rename = "Text")] text: String },
+    Text {
+        #[serde(rename = "Text")]
+        text: String,
+    },
     ToolUse {
         #[serde(rename = "ToolUse")]
         tool_use: ToolUseInfo,
     },
+    #[allow(dead_code)]
     Other(Value),
 }
 
@@ -86,9 +90,9 @@ struct ToolUseInfo {
 
 #[derive(Debug, Deserialize)]
 struct ToolResult {
-    tool_use_id: Option<String>,
-    tool_name: Option<String>,
-    is_error: Option<bool>,
+    _tool_use_id: Option<String>,
+    _tool_name: Option<String>,
+    _is_error: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -371,7 +375,7 @@ impl IngestionProbe for ZedProbe {
 
         // The source_path contains the thread ID embedded in the session ID
         // We need to get the message by index (line_number)
-        let thread_id = reference
+        let _thread_id = reference
             .source_path
             .file_stem()
             .and_then(|s| s.to_str())
@@ -380,11 +384,9 @@ impl IngestionProbe for ZedProbe {
         // If we have a thread ID in the path, use it; otherwise extract from context
         // This is a simplified implementation - in practice, we'd need the session ID
         let (data_type, data): (String, Vec<u8>) = conn
-            .query_row(
-                "SELECT data_type, data FROM threads LIMIT 1",
-                [],
-                |row| Ok((row.get(0)?, row.get(1)?)),
-            )
+            .query_row("SELECT data_type, data FROM threads LIMIT 1", [], |row| {
+                Ok((row.get(0)?, row.get(1)?))
+            })
             .context("Failed to query thread for content")?;
 
         let json_str = if data_type == "zstd" {

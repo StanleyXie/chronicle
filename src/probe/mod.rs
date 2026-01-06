@@ -211,6 +211,9 @@ impl ProbeRegistry {
     }
 
     pub fn get_probe(&self, id: &str) -> Option<&dyn IngestionProbe> {
-        self.probes.iter().find(|p| p.id() == id).map(|p| p.as_ref())
+        self.probes
+            .iter()
+            .find(|p| p.id() == id)
+            .map(|p| p.as_ref())
     }
 }

@@ -27,10 +27,10 @@ pub struct OpenCodeProbe {
 
 // OpenCode data structures
 #[derive(Debug, Deserialize)]
-struct OpenCodeSession {
-    id: String,
+struct _OpenCodeSession {
+    _id: String,
     #[serde(rename = "projectID")]
-    project_id: Option<String>,
+    _project_id: Option<String>,
     directory: Option<String>,
     title: Option<String>,
     time: Option<SessionTime>,
@@ -46,7 +46,7 @@ struct SessionTime {
 struct OpenCodeMessage {
     id: String,
     #[serde(rename = "sessionID")]
-    session_id: String,
+    _session_id: String,
     role: Option<String>,
     #[serde(rename = "providerID")]
     provider_id: Option<String>,
@@ -71,15 +71,15 @@ struct MessageTime {
 
 #[derive(Debug, Deserialize)]
 struct OpenCodePart {
-    id: String,
+    _id: String,
     #[serde(rename = "sessionID")]
-    session_id: String,
+    _session_id: String,
     #[serde(rename = "messageID")]
-    message_id: String,
+    _message_id: String,
     #[serde(rename = "type")]
     part_type: String,
     // For text parts
-    text: Option<String>,
+    _text: Option<String>,
     // For tool parts
     tool: Option<String>,
     #[serde(rename = "callID")]
@@ -98,7 +98,7 @@ struct ToolState {
 struct TokenInfo {
     input: Option<i64>,
     output: Option<i64>,
-    reasoning: Option<i64>,
+    _reasoning: Option<i64>,
     cache: Option<CacheInfo>,
 }
 
@@ -224,10 +224,10 @@ impl IngestionProbe for OpenCodeProbe {
 
     fn extract_metadata(&self, session: &SessionRef) -> Result<SessionMetadata> {
         // Read session file
-        let session_content = fs::read_to_string(&session.source_path)
-            .context("Failed to read session file")?;
-        let session_data: OpenCodeSession = serde_json::from_str(&session_content)
-            .context("Failed to parse session JSON")?;
+        let session_content =
+            fs::read_to_string(&session.source_path).context("Failed to read session file")?;
+        let session_data: _OpenCodeSession =
+            serde_json::from_str(&session_content).context("Failed to parse session JSON")?;
 
         // Get timestamps from session
         let first_timestamp = session_data
@@ -343,7 +343,9 @@ impl IngestionProbe for OpenCodeProbe {
                                 has_tool_use = true;
                                 tool_uses.push(ToolUseMetadata {
                                     tool_id: part_data.call_id,
-                                    tool_name: part_data.tool.unwrap_or_else(|| "unknown".to_string()),
+                                    tool_name: part_data
+                                        .tool
+                                        .unwrap_or_else(|| "unknown".to_string()),
                                     has_result: part_data
                                         .state
                                         .as_ref()
@@ -356,8 +358,14 @@ impl IngestionProbe for OpenCodeProbe {
                                     token_usage = Some(TokenUsage {
                                         input_tokens: tokens.input,
                                         output_tokens: tokens.output,
-                                        cache_read_tokens: tokens.cache.as_ref().and_then(|c| c.read),
-                                        cache_creation_tokens: tokens.cache.as_ref().and_then(|c| c.write),
+                                        cache_read_tokens: tokens
+                                            .cache
+                                            .as_ref()
+                                            .and_then(|c| c.read),
+                                        cache_creation_tokens: tokens
+                                            .cache
+                                            .as_ref()
+                                            .and_then(|c| c.write),
                                     });
                                 }
                             }
@@ -419,7 +427,7 @@ impl IngestionProbe for OpenCodeProbe {
         // For OpenCode, content is in separate part files
         if let Some(content_path) = &reference.content_path {
             let content = fs::read_to_string(content_path)?;
-            
+
             // Try to extract text from the JSON
             if let Ok(json) = serde_json::from_str::<Value>(&content) {
                 // For text parts, extract the text field
@@ -433,7 +441,7 @@ impl IngestionProbe for OpenCodeProbe {
                     }
                 }
             }
-            
+
             // Return raw content if parsing fails
             return Ok(content);
         }
