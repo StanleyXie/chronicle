@@ -64,7 +64,7 @@ jobs:
           # A PR will be sent to the "homebrew-tap" repository to update this formula
           formula-name: chronicle
           formula-path: Formula/chronicle.rb
-          homebrew-tap: USER/homebrew-tap # REPLACE THIS with your actual tap repository (e.g., stanleyxie/homebrew-tap)
+          homebrew-tap: StanleyXie/homebrew-tap
           download-url: https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/chronicle-darwin-arm64.tar.gz
           commit-message: "chore: update formula to ${{ github.ref_name }}"
         env:
